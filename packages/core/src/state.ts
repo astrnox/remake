@@ -1,6 +1,6 @@
 import type { Achievement, Event, Talent } from '@remake/data'
 import type { TimelineId } from '@remake/data'
-import { defaultTimeline } from '@remake/data'
+import { defaultTimeline, timelineById } from '@remake/data'
 import { produce } from 'immer'
 import { sum, keys } from '@remake/vitex'
 
@@ -56,8 +56,17 @@ export function createState(
     talents?: Iterable<Talent['id']>,
     timeline: TimelineId = defaultTimeline,
 ): GameState {
+    // 叠加时间线的出生属性偏置（如乱世的勇武、未来的智体强化）
+    const alloc: Allocation = { ...allocation }
+    const startEffect = timelineById.get(timeline)?.startEffect
+    if (startEffect) {
+        for (const key in startEffect) {
+            const prop = key as keyof Allocation
+            alloc[prop] += startEffect[prop]!
+        }
+    }
     return {
-        props: createHLProperties(allocation),
+        props: createHLProperties(alloc),
         life: 1,
         talents: new Set(talents),
         events: new Set(),

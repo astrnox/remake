@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react'
 import { useLayoutEffect, useEffect } from 'react'
-import { useNext, useGotoSummary, type Log } from '@remake/hooks'
+import { useNext, useGotoSummary, useTimeline, type Log } from '@remake/hooks'
 import { useJudge } from '@/hooks/judge'
 import { achievements, events, talents } from '@remake/data'
 import { properties } from '@/display'
@@ -146,6 +146,7 @@ function Properties() {
 }
 
 export function Play() {
+    const timeline = useTimeline()
     const [{ logs, ended }, next] = useNext()
     const [auto, setAuto] = useState(false)
     const logRef = useRef<HTMLUListElement>(null)
@@ -173,7 +174,19 @@ export function Play() {
         return () => window.clearInterval(autoRef.current)
     }, [auto, handleNext])
     return (
-        <div className="screen play">
+        <div
+            className="screen play"
+            style={{ ['--tl-color' as string]: timeline.themeColor }}
+        >
+            <div className="tl-banner">
+                <span className="emoji" aria-hidden="true">
+                    {timeline.emoji}
+                </span>
+                <span className="name">{timeline.name}</span>
+                {timeline.title && (
+                    <span className="title">· {timeline.title}</span>
+                )}
+            </div>
             <Properties />
             <ul
                 className="logs hide-scrollbar"

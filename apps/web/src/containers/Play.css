@@ -1,6 +1,32 @@
 .screen.play {
     height: calc(100dvh - 2rem);
     gap: 1rem;
+    > .tl-banner {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        height: 2.5rem;
+        box-sizing: border-box;
+        border: 0.0625rem solid var(--tl-color, var(--base-text-color));
+        border-bottom: 0.1875rem solid var(--tl-color, var(--color-primary));
+        color: var(--base-text-color);
+        user-select: none;
+        .emoji {
+            font-size: 1.4rem;
+            line-height: 1;
+        }
+        .name {
+            font-weight: bold;
+            color: var(--tl-color, var(--color-primary));
+        }
+        .title {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+    }
     > ul.properties {
         display: flex;
         flex-direction: row;

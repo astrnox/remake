@@ -4,8 +4,8 @@ import { useConfig, useProfile, useReplaced, useAlloc } from '.'
 import { useTalentReset, useAllocReset } from '.'
 import { start, next, summary, end } from '@remake/core'
 import type { GameState, Properties, NextResult } from '@remake/core'
-import type { Talent, TimelineId } from '@remake/data'
-import { defaultTimeline } from '@remake/data'
+import type { Talent, Timeline, TimelineId } from '@remake/data'
+import { defaultTimeline, timelineById } from '@remake/data'
 
 export enum Step {
     Idle = 'idle',
@@ -59,7 +59,10 @@ export const useGameReset = () => {
 
 export const useMode = () => useAtomValue(modeAtom)
 export const useIsClassic = () => useAtomValue(modeAtom) === Mode.Classic
-export const useTimeline = () => useAtomValue(timelineAtom)
+export const useTimeline = (): Timeline => {
+    const id = useAtomValue(timelineAtom)
+    return timelineById.get(id)!
+}
 export const useStep = () => useAtomValue(stepAtom)
 export const useSetStep = () => useSetAtom(stepAtom)
 export const useGameState = () => useAtomValue(gameStateAtom)
