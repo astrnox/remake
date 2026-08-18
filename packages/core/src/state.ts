@@ -1,4 +1,6 @@
 import type { Achievement, Event, Talent } from '@remake/data'
+import type { TimelineId } from '@remake/data'
+import { defaultTimeline } from '@remake/data'
 import { produce } from 'immer'
 import { sum, keys } from '@remake/vitex'
 
@@ -35,6 +37,7 @@ export interface GameState {
     events: Set<Event['id']> // 本局触发过的事件
     achievements: Set<Achievement['id']> // 本局达成的成就
     talentTriggers: Map<Talent['id'], number> // 本局天赋触发次数
+    timeline: TimelineId // 本局时间线
 }
 
 /** 持久化存储的数据 */
@@ -51,6 +54,7 @@ export interface ProfileState {
 export function createState(
     allocation: Allocation,
     talents?: Iterable<Talent['id']>,
+    timeline: TimelineId = defaultTimeline,
 ): GameState {
     return {
         props: createHLProperties(allocation),
@@ -59,6 +63,7 @@ export function createState(
         events: new Set(),
         achievements: new Set(),
         talentTriggers: new Map(),
+        timeline,
     }
 }
 

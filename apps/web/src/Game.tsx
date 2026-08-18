@@ -3,6 +3,7 @@ import { useInit, useWatcher } from '@/hooks/storage'
 import { useStep, Step } from '@remake/hooks'
 import ToastContainer from '@/toast'
 import Home from '@/containers/Home'
+import Timeline from '@/containers/Timeline'
 import Mode from '@/containers/Mode'
 import Chara from '@/containers/Chara'
 import Pick from '@/containers/Pick'
@@ -17,6 +18,7 @@ export function Container() {
     /* prettier-ignore */
     switch (useStep()) {
         case Step.Idle: return <Home />
+        case Step.Timeline: return <Timeline />
         case Step.Mode: return <Mode />
         case Step.Chara: return <Chara />
         case Step.Pick: return <Pick />

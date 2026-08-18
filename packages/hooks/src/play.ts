@@ -4,10 +4,12 @@ import { useConfig, useProfile, useReplaced, useAlloc } from '.'
 import { useTalentReset, useAllocReset } from '.'
 import { start, next, summary, end } from '@remake/core'
 import type { GameState, Properties, NextResult } from '@remake/core'
-import type { Talent } from '@remake/data'
+import type { Talent, TimelineId } from '@remake/data'
+import { defaultTimeline } from '@remake/data'
 
 export enum Step {
     Idle = 'idle',
+    Timeline = 'timeline',
     Mode = 'mode',
     Chara = 'chara',
     Pick = 'pick',
@@ -28,6 +30,7 @@ export type Log = Omit<NextResult, 'state'> & {
 }
 
 export const modeAtom = atom<Mode>(Mode.Classic)
+export const timelineAtom = atom<TimelineId>(defaultTimeline)
 export const stepAtom = atom<Step>(Step.Idle)
 export const gameStateAtom = atom<GameState | null>(null)
 export const logsAtom = atom<Log[]>([])
@@ -56,6 +59,7 @@ export const useGameReset = () => {
 
 export const useMode = () => useAtomValue(modeAtom)
 export const useIsClassic = () => useAtomValue(modeAtom) === Mode.Classic
+export const useTimeline = () => useAtomValue(timelineAtom)
 export const useStep = () => useAtomValue(stepAtom)
 export const useSetStep = () => useSetAtom(stepAtom)
 export const useGameState = () => useAtomValue(gameStateAtom)
@@ -64,14 +68,27 @@ export const useSummary = () => useAtomValue(summaryAtom)
 export const useLogs = () => useAtomValue(logsAtom)
 
 export const useRemake = () => {
-    const { mode } = useConfig()
-    const [{ times }] = useProfile()
     const setStep = useSetAtom(stepAtom)
     const reset = useGameReset()
     return useCallback(() => {
         reset()
-        setStep(times < mode ? Step.Pick : Step.Mode)
-    }, [mode, times, setStep, reset])
+        setStep(Step.Timeline)
+    }, [setStep, reset])
+}
+
+export const useTimelineChoose = () => {
+    const { mode } = useConfig()
+    const [{ times }] = useProfile()
+    const setTimeline = useSetAtom(timelineAtom)
+    const setStep = useSetAtom(stepAtom)
+    const choose = useCallback(
+        (timeline: TimelineId) => {
+            setTimeline(timeline)
+            setStep(times < mode ? Step.Pick : Step.Mode)
+        },
+        [setTimeline, setStep, mode, times],
+    )
+    return choose
 }
 
 export const useModeChoose = () => {
@@ -98,13 +115,14 @@ export const useStart = () => {
     const setState = useSetAtom(gameStateAtom)
     const { final: allocate } = useAlloc()
     const { talents: tr } = useReplaced()
+    const timeline = useAtomValue(timelineAtom)
     return useCallback(() => {
         const alloc = { ...allocate, spirit }
-        const result = start(profile, alloc, tr.talents)
+        const result = start(profile, alloc, tr.talents, timeline)
         setState(result.state)
         setStep(Step.Play)
         return result.achievements
-    }, [profile, allocate, spirit, tr, setStep, setState])
+    }, [profile, allocate, spirit, tr, timeline, setStep, setState])
 }
 
 export const useNext = () => {

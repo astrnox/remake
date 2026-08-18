@@ -111,3 +111,6 @@ __localStorage.json
 
 template/public
 public/data
+
+# pnpm store (local build cache)
+.pnpm-store/

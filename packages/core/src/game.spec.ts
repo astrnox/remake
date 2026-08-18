@@ -48,6 +48,23 @@ describe('Achievement', () => {
         expect(result.state.events).toContain(10588) // 无事发生
     })
 
+    test('tang timeline events', () => {
+        // 古代·科举时间线：童年（10岁）应抽取科举事件池（50001~50010）
+        const state = produce(
+            createState(allocation, [], 'tang'),
+            draft => {
+                draft.props = propsEffect(draft.props, { age: 10 })
+            },
+        )
+        expect(state.timeline).toBe('tang') // 时间线被正确写入状态
+        const result = next(state, profile)
+        expect(result.state.timeline).toBe('tang') // 时间线在整个回合中保持不变
+        expect(result.events.length).toBe(1)
+        const id = result.events[0]
+        expect(id).toBeGreaterThanOrEqual(50001) // 命中童年事件池
+        expect(id).toBeLessThanOrEqual(50010)
+    })
+
     test('summary', () => {
         const state = produce(
             createState(allocation, [1001, 1111, 1130]),

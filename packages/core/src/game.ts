@@ -1,5 +1,8 @@
 import type { Achievement, Event, Talent } from '@remake/data'
-import { ages, AchievementOpportunity as Ao } from '@remake/data'
+import {
+    agesByTimeline,
+    AchievementOpportunity as Ao,
+} from '@remake/data'
 import type { GameState, ProfileState } from './state'
 import { createState, nextProfile, propsEffect } from './state'
 import { summary as stateSummary } from './state'
@@ -58,11 +61,12 @@ export function next(
     })
     const age = s.props.current.age
     const tr = ttr(s, profile, rng)
-    const events = ages
-        .get(age)!
-        .event.filter(([e]) => ec(e, tr.state, profile))
-    const event = pickWeight(events, rng)!
-    const er = etr(event, tr.state, profile)
+    const event = pickAgedEvent(age, state.timeline, tr.state, profile, rng)
+    const er = event == null ? { state: tr.state, triggers: [] } : etr(
+        event,
+        tr.state,
+        profile,
+    )
     const ar = atr(Ao.Trajectory, er.state, profile)
     const end = ar.state.life < 1
     return {
@@ -73,6 +77,27 @@ export function next(
         talents: tr.triggers,
         end,
     }
+}
+
+/**
+ * 依据当前时间线，从该年龄的事件池中抽取一个满足条件的事件。
+ * 若时间线缺失或多个原因抽不到事件，返回 null（走到 end 判定前）。
+ */
+function pickAgedEvent(
+    age: number,
+    timeline: GameState['timeline'],
+    state: GameState,
+    profile: ProfileState,
+    rng?: RNG,
+): Event['id'] | null {
+    const ages = agesByTimeline.get(timeline)
+    if (!ages) return null
+    // 超过时间线覆盖的最大年龄时，回退到最大年龄，保证不会越界
+    const maxAge = Math.max(...ages.keys())
+    const safeAge = Math.min(age, maxAge)
+    const pool = ages.get(safeAge)?.event ?? []
+    const event = pool.filter(([e]) => ec(e, state, profile))
+    return pickWeight(event, rng) ?? null
 }
 
 export interface SummaryResult {
